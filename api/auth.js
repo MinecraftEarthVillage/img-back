@@ -3,7 +3,7 @@ const axios = require('axios');
 
 module.exports = async (req, res) => {
   // 修复CORS - 设置正确的头部
-  res.setHeader('Access-Control-Allow-Origin', 'https://www.globalvillage.xn--xhq521b');
+  res.setHeader('Access-Control-Allow-Origin', 'https://www.globalvillage.xn--xhq521b/img');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
