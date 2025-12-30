@@ -1,20 +1,22 @@
-// backend/api/upload.js - 处理文件上传
+// api/upload.js
 const axios = require('axios');
 
 module.exports = async (req, res) => {
-  // 设置CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
+  // 修复CORS
+  res.setHeader('Access-Control-Allow-Origin', 'https://www.globalvillage.xn--xhq521b');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    res.status(200).end();
+    return;
   }
-  
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
-  
+
   try {
     const { token, filename, content, message, branch = 'main' } = req.body;
     
@@ -22,17 +24,22 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
     
-    // GitHub仓库配置
+    // 确保有环境变量
+    if (!process.env.GITHUB_REPO_OWNER || !process.env.GITHUB_REPO_NAME) {
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+    
     const owner = process.env.GITHUB_REPO_OWNER;
     const repo = process.env.GITHUB_REPO_NAME;
-    const path = `images/${filename}`; // 上传到images目录
+    const path = `images/${filename}`;
     
-    // 调用GitHub API创建文件
+    console.log(`上传文件到: ${owner}/${repo}/${path}`);
+    
     const response = await axios.put(
       `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
       {
         message: message || `Upload ${filename}`,
-        content: content, // base64编码的内容
+        content: content,
         branch: branch
       },
       {
@@ -46,9 +53,9 @@ module.exports = async (req, res) => {
     
     res.json({
       success: true,
-      data: response.data,
       url: `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`,
-      html_url: `https://github.com/${owner}/${repo}/blob/${branch}/${path}`
+      html_url: response.data.content.html_url,
+      sha: response.data.content.sha
     });
     
   } catch (error) {
@@ -60,7 +67,10 @@ module.exports = async (req, res) => {
         details: error.response.data
       });
     } else {
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ 
+        error: 'Internal server error',
+        message: error.message
+      });
     }
   }
 };
