@@ -1,17 +1,13 @@
 {
   "functions": {
-    "api/auth.js": {
-      "maxDuration": 10
-    },
-    "api/upload.js": {
+    "api/*.js": {
       "maxDuration": 10
     }
   },
-  "env": {
-    "GITHUB_CLIENT_ID": "@github_client_id",
-    "GITHUB_CLIENT_SECRET": "@github_client_secret",
-    "GITHUB_REPO_OWNER": "@github_repo_owner",
-    "GITHUB_REPO_NAME": "@github_repo_name",
-    "REDIRECT_URI": "@redirect_uri"
-  }
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    }
+  ]
 }
