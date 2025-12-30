@@ -1,26 +1,26 @@
-// api/auth.js 完整修正版
 const axios = require('axios');
 
 module.exports = async (req, res) => {
-  // 修复CORS - 设置正确的头部
-  res.setHeader('Access-Control-Allow-Origin', 'https://www.globalvillage.xn--xhq521b/img');
+  // 🔥 必须添加CORS头部
+  res.setHeader('Access-Control-Allow-Origin', 'https://www.globalvillage.xn--xhq521b');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-  // 处理预检请求
+  // 🔥 必须处理OPTIONS预检请求
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
   }
 
-  // 只允许POST请求
+  // 🔥 验证请求方法
   if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST, OPTIONS');
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { code, redirect_uri } = req.body;
+    const { code, redirect_uri } = req.body || {};
     
     if (!code) {
       return res.status(400).json({ error: 'Missing authorization code' });
@@ -58,11 +58,9 @@ module.exports = async (req, res) => {
 
   } catch (error) {
     console.error('Auth error:', error.message);
-    console.error('Error details:', error.response?.data);
-    
     res.status(500).json({ 
       error: 'Internal server error',
-      details: error.message 
+      message: error.message
     });
   }
 };
